@@ -1,3 +1,5 @@
+这是个私人脚本，脚本内很多参数是根据本人需求写的，不建议直接使用
+
 # wsgjpMac
 曲线解决管家婆云ERP进销存版在 Mac 系统中不能打印的问题。
 
@@ -14,13 +16,3 @@
 
 当然，该脚本在装有 Python 的 Windows 平台同样可用。
 
-
-## 使用流程：
-
-### 在管家婆单据页面点击打印——导出数据到 Excel
-
-![](http://ww1.sinaimg.cn/large/6fefdebdly1fqsmbb6dt1j20wa0imn1u.jpg)
-
-执行这一步操作后，会自动在用户默认下载文件夹中生成一个最新的 excel 文件。
-
-### 在终端运行程序 python gjp
