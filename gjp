@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+
+import os, xlrd, webbrowser
+
+file_dir = os.path.expanduser('~/Downloads/')
+output_html_dir = os.path.expanduser('~/Dropbox/list')
+output_png_dir = os.path.expanduser('~/Dropbox/screenshot')
+
+
+
+def newest_file(file_dir):
+    file_list = os.listdir(file_dir)
+    file_list.sort(key=lambda fn: os.path.getmtime(file_dir + fn) if not os.path.isdir(file_dir + fn) else 0)
+    return file_dir + file_list[-1]
+
+file = newest_file(file_dir)
+
+
+
+data = xlrd.open_workbook(file, 'r')
+table = data.sheet_by_index(0)
+nrows = table.nrows
+
+if table.row_values(25)[0] == '发货仓库' and table.row_values(31)[0] == '合计数量:':
+    date = table.row_values(2)[1]
+    client = table.row_values(4)[1]
+    money_amount = table.row_values(35)[1]
+    ciqian = table.row_values(39)[1]
+    heji = table.row_values(40)[1]
+
+    detail = ""
+
+    for i in range(43, nrows):
+        line_num = int(table.row_values(i)[0])
+        product_name = table.row_values(i)[2]
+        product_amount = table.row_values(i)[3]
+        product_price = table.row_values(i)[7]
+        product_money = table.row_values(i)[8]
+        product_note = table.row_values(i)[9]
+        detail += '''<tr>
+      		<td>%s</td> \n
+      		<td>%s</td> \n
+      		<td>%s</td> \n
+      		<td>%s</td> \n
+      		<td>%s</td> \n
+          <td>%s</td> \n
+      		</tr>''' % (line_num, product_name, product_amount, product_price, product_money, product_note)
+
+elif table.row_values(25)[0] == '过账时间' and table.row_values(31)[0] == '折扣率(%):':
+    date = table.row_values(2)[1]
+    client = table.row_values(4)[1]
+    money_amount = table.row_values(36)[1]
+    ciqian = 0
+    heji = table.row_values(18)[1]
+
+    detail = ""
+
+    for i in range(41, nrows):
+        line_num = int(table.row_values(i)[0])
+        product_name = table.row_values(i)[2]
+        product_amount = table.row_values(i)[3]
+        product_price = table.row_values(i)[7]
+        product_money = table.row_values(i)[8]
+        product_note = table.row_values(i)[9]
+        detail += '''<tr>
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+          <td>%s</td> \n
+                    </tr>''' % (line_num, product_name, product_amount, product_price, product_money, product_note)
+
+elif table.row_values(25)[0] == '发货仓库' and table.row_values(31)[0] == '可用积分:':
+    date = table.row_values(2)[1]
+    client = table.row_values(4)[1]
+    money_amount = table.row_values(36)[1]
+    ciqian = table.row_values(40)[1]
+    heji = table.row_values(41)[1]
+
+    detail = ""
+
+    for i in range(44, nrows):
+        line_num = int(table.row_values(i)[0])
+        product_name = table.row_values(i)[2]
+        product_amount = table.row_values(i)[3]
+        product_price = table.row_values(i)[7]
+        product_money = table.row_values(i)[8]
+        product_note = table.row_values(i)[9]
+        detail += '''<tr>
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+                    <td>%s</td> \n
+          <td>%s</td> \n
+                    </tr>''' % (line_num, product_name, product_amount, product_price, product_money, product_note)
+else:
+    print('出错了')
+
+html = '''
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+<meta charset="UTF-8">
+<link href="https://cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.bootcss.com/bootstrap/2.3.2/css/bootstrap-responsive.min.css" rel="stylesheet">
+<style type="text/css">
+.center {
+	width:800px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+td  
+{  
+    padding-left:12px;  
+}  
+
+</style>
+
+<html>
+
+<body class = "center">
+
+<h4 align="center" >三雄极光照明·南部店 销售单</h4>
+<p></p>
+<div style="display: table;width: 100%%;">
+<div style="display: table-cell;">客户：%s</div>
+<div style="display: table-cell; text-align: right;">开单日期：%s</div>
+</div>
+<p></p>
+
+<table border="1" width= "100%%">
+<tr>
+  <td width="6%%">行号</td>
+  <td>商品全名</td>
+  <td width="7%%">数量</td>
+  <td width="7%%">单价</td>
+  <td width="7%%">金额</td>
+  <td width="21%%">备注</td>
+</tr>
+
+%s
+
+</table>
+<p></p>
+
+<div style="display: table;width: 100%%;">
+<div style="display: table-cell;">本单应收：%s</div>
+<div style="display: table-cell;">此前应收：%s</div>
+<div style="display: table-cell;">合计应收：%s</div>
+<div style="display: table-cell; text-align: right;">经手人：邱大川</div>
+</div>
+
+</body>
+</html>
+''' % (client, date, detail, money_amount, ciqian, heji)
+
+output = open("%s/%s_%s.html" % (output_html_dir,client, date), "w")
+output.write(html)
+output.close()
+
+from selenium import webdriver
+
+browser = webdriver.Firefox()
+
+url = "file://%s/%s_%s.html" % (output_html_dir,client, date)
+browser.set_window_size(960, 600)
+browser.get(url)
+browser.save_screenshot("%s/%s_%s.png" % (output_png_dir,client, date))
+browser.close()
